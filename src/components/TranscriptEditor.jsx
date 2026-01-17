@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Search, Loader2, Download, Trash2 } from 'lucide-react';
 import { useEditor } from '../context/EditorContext';
 import { processVideoTranscription } from '../lib/video-processor';
-import { exportTranscriptAsSRT, exportTranscriptAsVTT } from '../lib/transcription';
+import { exportTranscriptAsSRT, exportTranscriptAsVTT, loadWhisper } from '../lib/transcription';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
@@ -26,6 +26,7 @@ export default function TranscriptEditor() {
     setIsPlaying,
     deleteWord,
     setLanguage,
+    clearDeletedSegments,
   } = useEditor();
 
   const [selectedWords, setSelectedWords] = useState(new Set());
@@ -37,9 +38,22 @@ export default function TranscriptEditor() {
     console.log('[TranscriptEditor] Starting transcription...');
     setIsTranscribing(true);
     setTranscriptionProgress(0);
-    setStatusMessage('Starting transcription...');
+    setStatusMessage('Loading Whisper model...');
+    
+    // Clear any previous deleted segments to prevent strike-through bug
+    if (clearDeletedSegments) {
+      clearDeletedSegments();
+    }
     
     try {
+      // Step 1: Load the Whisper model first
+      await loadWhisper('tiny', (progress) => {
+        setTranscriptionProgress(progress);
+        setStatusMessage('Loading Whisper model...');
+      });
+      
+      setStatusMessage('Starting transcription...');
+      
       let result;
       
       const processVideo = async () => {
@@ -79,7 +93,6 @@ export default function TranscriptEditor() {
       setStatusMessage('Transcription complete!');
       setTranscriptionProgress(100);
       
-      // Force UI update after a short delay
       setTimeout(() => {
         setIsTranscribing(false);
       }, 500);
@@ -90,7 +103,7 @@ export default function TranscriptEditor() {
       alert('Transcription failed: ' + error.message);
       setIsTranscribing(false);
     }
-  }, [videoFile, language, setIsTranscribing, setTranscriptionProgress, setTranscript]);
+  }, [videoFile, language, setIsTranscribing, setTranscriptionProgress, setTranscript, clearDeletedSegments]);
 
   useEffect(() => {
     if (videoFile && transcript.length === 0 && !isTranscribing) {
@@ -99,11 +112,9 @@ export default function TranscriptEditor() {
   }, [videoFile, transcript.length, isTranscribing, startTranscription]);
 
   const handleWordClick = (wordIndex, word) => {
-    // Jump to timestamp
     setCurrentTime(word.start);
     setIsPlaying(true);
     
-    // Toggle selection
     const newSelection = new Set(selectedWords);
     if (newSelection.has(wordIndex)) {
       newSelection.delete(wordIndex);
@@ -116,18 +127,35 @@ export default function TranscriptEditor() {
   const handleDeleteSelected = () => {
     if (selectedWords.size === 0) return;
     
+    console.log('Deleting words:', Array.from(selectedWords));
+    console.log('Current deleted segments BEFORE:', deletedSegments);
+    
     // Delete each selected word
     Array.from(selectedWords).sort((a, b) => b - a).forEach(index => {
+      const word = transcript[index];
+      console.log('Deleting word:', index, word);
       deleteWord(index);
     });
+    
+    // Check segments after deletion
+    setTimeout(() => {
+      console.log('Deleted segments AFTER:', deletedSegments);
+    }, 100);
     
     setSelectedWords(new Set());
   };
 
   const isWordDeleted = (word) => {
-    return deletedSegments.some(seg => 
+    const deleted = deletedSegments.some(seg => 
       word.start >= seg.start && word.end <= seg.end
     );
+    
+    // Debug logging - remove after fixing
+    if (deleted) {
+      console.log('Word deleted:', word.word, 'time:', word.start, '-', word.end, 'segments:', deletedSegments);
+    }
+    
+    return deleted;
   };
 
   const isWordActive = (index) => {
@@ -281,7 +309,7 @@ export default function TranscriptEditor() {
                     key={index}
                     onClick={() => handleWordClick(index, word)}
                     className={`
-                      word-clickable inline-block mx-0.5 my-0.5 transition-all duration-150
+                      word-clickable inline-block mx-0.5 my-0.5 transition-all duration-150 cursor-pointer
                       ${isActive ? 'word-active font-semibold scale-105' : ''}
                       ${isDeleted ? 'word-deleted' : ''}
                       ${isSelected ? 'bg-yellow-200 dark:bg-yellow-800 font-medium' : ''}

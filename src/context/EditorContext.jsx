@@ -36,6 +36,7 @@ export const EditorProvider = ({ children }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [exportedVideoUrl, setExportedVideoUrl] = useState(null);
+  const [showExportPanel, setShowExportPanel] = useState(false);
   
   // FFmpeg state
   const [ffmpegLoaded, setFfmpegLoaded] = useState(false);
@@ -64,6 +65,13 @@ export const EditorProvider = ({ children }) => {
     }
   }, [transcript]);
 
+  const deleteTimeRange = useCallback((startTime, endTime) => {
+    setDeletedSegments(prevSegments => {
+      const newSegments = [...prevSegments, { start: startTime, end: endTime }];
+      return mergeSegments(newSegments);
+    });
+  }, []);
+
   const deleteWord = useCallback((wordIndex) => {
     const word = transcript[wordIndex];
     
@@ -74,6 +82,17 @@ export const EditorProvider = ({ children }) => {
       });
     }
   }, [transcript]);
+
+  const undoLastDelete = useCallback(() => {
+    setDeletedSegments(prevSegments => {
+      if (prevSegments.length === 0) return prevSegments;
+      return prevSegments.slice(0, -1);
+    });
+  }, []);
+
+  const clearDeletedSegments = useCallback(() => {
+    setDeletedSegments([]);
+  }, []);
 
   const reset = useCallback(() => {
     setVideoFile(null);
@@ -107,6 +126,7 @@ export const EditorProvider = ({ children }) => {
     isExporting,
     exportProgress,
     exportedVideoUrl,
+    showExportPanel,
     ffmpegLoaded,
     
     // Actions
@@ -120,12 +140,16 @@ export const EditorProvider = ({ children }) => {
     setTranscriptionProgress,
     setLanguage,
     deleteTextRange,
+    deleteTimeRange,
     deleteWord,
+    undoLastDelete,
+    clearDeletedSegments,
     setSelectedWordIndex,
     setSearchQuery,
     setIsExporting,
     setExportProgress,
     setExportedVideoUrl,
+    setShowExportPanel,
     setFfmpegLoaded,
     reset,
   };

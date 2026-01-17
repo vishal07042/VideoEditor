@@ -28,32 +28,43 @@ export default function ExportPanel() {
   const [statusMessage, setStatusMessage] = useState('');
 
   const handleExport = async () => {
-    if (!videoFile || deletedSegments.length === 0) {
-      alert('No edits to export. Please delete some segments from the transcript first.');
+    if (!videoFile) {
+      alert('No video file loaded.');
       return;
     }
 
     setIsExporting(true);
     setStatusMessage('Preparing export...');
+    setExportProgress(0);
     
     try {
+      console.log('[ExportPanel] Starting export with settings:', exportSettings);
+      console.log('[ExportPanel] Deleted segments:', deletedSegments);
+      console.log('[ExportPanel] Video duration:', videoDuration);
+      
       const resultBlob = await exportEditedVideo(
         videoFile,
         deletedSegments,
         videoDuration,
+        exportSettings,
         (progress, message) => {
+          console.log('[ExportPanel] Progress:', progress, message);
           setExportProgress(progress);
-          setStatusMessage(message);
+          setStatusMessage(message || 'Processing...');
         }
       );
+      
+      console.log('[ExportPanel] Export complete, blob size:', resultBlob.size);
       
       const url = URL.createObjectURL(resultBlob);
       setExportedVideoUrl(url);
       setStatusMessage('Export complete!');
+      setExportProgress(100);
     } catch (error) {
-      console.error('Export error:', error);
-      setStatusMessage('Export failed: ' + error.message);
-      alert('Export failed: ' + error.message);
+      console.error('[ExportPanel] Export error:', error);
+      const errorMsg = error.message || String(error);
+      setStatusMessage('Export failed: ' + errorMsg);
+      alert('Export failed: ' + errorMsg + '\n\nCheck the console for more details.');
     } finally {
       setIsExporting(false);
     }
