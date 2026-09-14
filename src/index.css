@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 262 83% 58%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 262 83% 58%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI",
+      "Roboto", sans-serif;
+  }
+  ::selection {
+    background: #ff4d00;
+    color: #fff6e9;
+  }
+}
+
+@layer components {
+  .word-clickable {
+    @apply cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors duration-150 rounded px-0.5;
+  }
+
+  .word-active {
+    @apply bg-primary text-primary-foreground rounded px-0.5;
+  }
+
+  .word-low-confidence {
+    @apply text-destructive/70;
+  }
+
+  .word-deleted {
+    @apply line-through opacity-50 bg-destructive/10;
+  }
+}
+
+/* Video.js custom styling (editor untouched) */
+.video-js {
+  @apply rounded-lg overflow-hidden;
+}
+
+.vjs-big-play-button {
+  @apply border-2 border-primary bg-primary/20 rounded-full;
+}
+
+/* ---------- Landing-only whimsy ---------- */
+
+.landing-dots {
+  background-image: radial-gradient(rgba(27, 19, 12, 0.16) 1.4px, transparent 1.4px);
+  background-size: 22px 22px;
+}
+
+.landing-grid {
+  background-image:
+    linear-gradient(rgba(27, 19, 12, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(27, 19, 12, 0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.landing-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+}
+
+.text-stroke-ink {
+  -webkit-text-stroke: 2.5px #1b130c;
+  color: transparent;
+}
+
+.text-stroke-paper {
+  -webkit-text-stroke: 2px #fff6e9;
+  color: transparent;
+}
+
+.marker-highlight {
+  background-image: linear-gradient(100deg, transparent 0.5%, #d9f450 3%, #d9f450 97%, transparent 98%);
+  background-repeat: no-repeat;
+  background-size: 100% 88%;
+  background-position: 0 78%;
+}
+
+.marker-tang {
+  background-image: linear-gradient(100deg, transparent 0.5%, #ff4d00 3%, #ff4d00 97%, transparent 98%);
+  background-repeat: no-repeat;
+  background-size: 100% 92%;
+  background-position: 0 70%;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
